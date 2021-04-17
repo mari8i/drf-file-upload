@@ -24,9 +24,18 @@ How it works
 
 3. Use the `uuid` in your APIs for associating the uploaded file with your django model instance::
 
+    POST https://example.com/api/foo/
     {
        [...],
        "my-file-attribute": "1ad29aa9-d470-442d-a5a3-5922e7ce0182"
+    }
+
+4. If you want to update the resource but leave the file unchanged, simply pass the file url as value::
+
+    PUT https://example.com/api/foo/2/
+    {
+        [...],
+        "my-file-attribute": "https://example.com/media/upload/file.png"
     }
 
 Quick start

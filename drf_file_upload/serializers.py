@@ -5,11 +5,10 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from drf_file_upload import models
-from drf_file_upload.fields import UploadedFileField, AnonymousUploadedFileField
+from drf_file_upload.fields import AnonymousUploadedFileField, UploadedFileField
 
 
 class UploadFileValidationMixin:
-
     def validate_file(self, value):
         if not self.is_supported_file(value.name):
             raise ValidationError("invalid-file-format")
@@ -18,14 +17,14 @@ class UploadFileValidationMixin:
         return value
 
     def is_supported_file(self, file):
-        if not hasattr(settings, 'DRF_FILE_UPLOAD_ALLOWED_FORMATS') or not settings.DRF_FILE_UPLOAD_ALLOWED_FORMATS:
+        if not hasattr(settings, "DRF_FILE_UPLOAD_ALLOWED_FORMATS") or not settings.DRF_FILE_UPLOAD_ALLOWED_FORMATS:
             return True
 
         mimetype = mimetypes.guess_type(file)[0]
         return mimetype in settings.DRF_FILE_UPLOAD_ALLOWED_FORMATS
 
     def respects_filesize_limit(self, size):
-        if not hasattr(settings, 'DRF_FILE_UPLOAD_MAX_SIZE') or not settings.DRF_FILE_UPLOAD_MAX_SIZE:
+        if not hasattr(settings, "DRF_FILE_UPLOAD_MAX_SIZE") or not settings.DRF_FILE_UPLOAD_MAX_SIZE:
             return True
         return size <= settings.DRF_FILE_UPLOAD_MAX_SIZE
 
@@ -69,7 +68,6 @@ class AnonymousUploadFileSerializer(UploadFileValidationMixin, serializers.Model
 
 
 class UploadedFileSerializerMixin:
-
     def clean_uploaded_files(self):
         for field_name, field_type in self.get_fields().items():
             if isinstance(field_type, AnonymousUploadedFileField) and field_name in self.validated_data:
@@ -79,14 +77,12 @@ class UploadedFileSerializerMixin:
 
 
 class UploadedFileSerializer(UploadedFileSerializerMixin, serializers.Serializer):
-
     def save(self, **kwargs):
         self.clean_uploaded_files()
         return super().save(**kwargs)
 
 
 class UploadedFileModelSerializer(UploadedFileSerializerMixin, serializers.ModelSerializer):
-
     def save(self, **kwargs):
         self.clean_uploaded_files()
         return super().save(**kwargs)

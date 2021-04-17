@@ -10,7 +10,6 @@ from tests.tests.base_test import BaseDrfFileUploadTestCase
 
 
 class TestDeleteExpiredUploadedFilesTestCase(BaseDrfFileUploadTestCase):
-
     def setUp(self):
         super().setUp()
         self.user = factory.create_user()

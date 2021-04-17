@@ -5,7 +5,6 @@ from tests.tests.base_test import BaseDrfFileUploadTestCase
 
 
 class TestSpectacularSchemaTestCase(BaseDrfFileUploadTestCase):
-
     def setUp(self):
         super().setUp()
         self.user = factory.create_user()

@@ -1,7 +1,6 @@
 import re
 
 from django.conf import settings
-from django.test import TestCase, RequestFactory
 from rest_framework import status
 from rest_framework.test import APIClient
 
@@ -13,7 +12,6 @@ API_ENDPOINT = "/anonymous-upload/"
 
 
 class AuthenticatedFileUploadTestCase(BaseDrfFileUploadTestCase):
-
     def setUp(self):
         super().setUp()
 

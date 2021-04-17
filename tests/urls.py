@@ -1,5 +1,5 @@
-from django.urls import path, include
+from django.urls import include, path
 
 urlpatterns = [
-    path('', include("drf_file_upload.urls")),
+    path("", include("drf_file_upload.urls")),
 ]

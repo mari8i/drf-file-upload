@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.test import RequestFactory
 from rest_framework import status
 from rest_framework.test import APIClient
 
@@ -11,13 +10,11 @@ API_ENDPOINT = "/upload/"
 
 
 class FakeRequest:
-
     def __init__(self, user):
         self.user = user
 
 
 class AuthenticatedFileUploadTestCase(BaseDrfFileUploadTestCase):
-
     def setUp(self):
         super().setUp()
         self.client = APIClient()

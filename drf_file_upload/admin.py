@@ -1,3 +1,6 @@
 from django.contrib import admin
 
-# Register your models here.
+from drf_file_upload import models
+
+admin.site.register(models.AuthenticatedUploadedFile)
+admin.site.register(models.AnonymousUploadedFile)

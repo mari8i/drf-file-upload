@@ -1,3 +1,6 @@
+import mimetypes
+
+from django.conf import settings
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import SkipField
@@ -5,7 +8,29 @@ from rest_framework.fields import SkipField
 from drf_file_upload import models
 
 
-class AuthenticatedUploadFileSerializer(serializers.ModelSerializer):
+class UploadFileValidationMixin:
+
+    def validate_file(self, value):
+        if not self.is_supported_file(value.name):
+            raise ValidationError("invalid-file-format")
+        if not self.respects_filesize_limit(value.size):
+            raise ValidationError("file-too-large")
+        return value
+
+    def is_supported_file(self, file):
+        if not hasattr(settings, 'DRF_FILE_UPLOAD_ALLOWED_FORMATS') or not settings.DRF_FILE_UPLOAD_ALLOWED_FORMATS:
+            return True
+
+        mimetype = mimetypes.guess_type(file)[0]
+        return mimetype in settings.DRF_FILE_UPLOAD_ALLOWED_FORMATS
+
+    def respects_filesize_limit(self, size):
+        if not hasattr(settings, 'DRF_FILE_UPLOAD_MAX_SIZE') or not settings.DRF_FILE_UPLOAD_MAX_SIZE:
+            return True
+        return size <= settings.DRF_FILE_UPLOAD_MAX_SIZE
+
+
+class AuthenticatedUploadFileSerializer(UploadFileValidationMixin, serializers.ModelSerializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -25,7 +50,7 @@ class AuthenticatedUploadFileSerializer(serializers.ModelSerializer):
         # }
 
 
-class AnonymousUploadFileSerializer(serializers.ModelSerializer):
+class AnonymousUploadFileSerializer(UploadFileValidationMixin, serializers.ModelSerializer):
     class Meta:
         model = models.AnonymousUploadedFile
         fields = ["file", "uuid"]
@@ -41,21 +66,6 @@ class AnonymousUploadFileSerializer(serializers.ModelSerializer):
         #         ),
         #     },
         # }
-
-    def validate_file(self, value):
-        if not self._is_supported_file(value.name):
-            raise ValidationError("invalid-file-format")
-        if not self._respects_filesize_limit(value.size):
-            raise ValidationError("file-too-large")
-        return value
-
-    def _is_supported_file(self, file):
-        return True
-        # mimetype = mimetypes.guess_type(file)[0]
-        # return mimetype in settings.SUPPORTED_IMAGE_FORMAT or mimetype in settings.SUPPORTED_DOCUMENT_FORMAT
-
-    def _respects_filesize_limit(self, size):
-        return size <= 5242880
 
 
 class UploadedFileField(serializers.Field):

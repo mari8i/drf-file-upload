@@ -52,10 +52,12 @@ Quick start
 
     path('upload/', include('drf_file_upload.urls')),
 
-3. Run ``python manage.py migrate`` to create the file upload models.
+This will add both separate authenticated and anonymous users to file upload endpoints.
+Todo: add single view examples
 
-4. Start the development server and visit http://127.0.0.1:8000/admin/
-   to create see uploaded files (you'll need the Admin app enabled).
+3. Add the UploadedFileField to your serializers todo
+
+4. Run ``python manage.py migrate`` to create the file upload models.
 
 5. Run the cleanup management command `deleted_expired_uploaded_files` in a cron task or add a celery task
 

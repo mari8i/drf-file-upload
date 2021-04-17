@@ -1,4 +1,3 @@
-from django.test import RequestFactory
 from rest_framework.test import APIClient
 
 from drf_file_upload import models

@@ -3,9 +3,9 @@ import mimetypes
 from django.conf import settings
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from rest_framework.fields import SkipField
 
 from drf_file_upload import models
+from drf_file_upload.fields import UploadedFileField, AnonymousUploadedFileField
 
 
 class UploadFileValidationMixin:
@@ -68,107 +68,25 @@ class AnonymousUploadFileSerializer(UploadFileValidationMixin, serializers.Model
         # }
 
 
-class UploadedFileField(serializers.Field):
-    requires_context = True
+class UploadedFileSerializerMixin:
 
-    def to_internal_value(self, data):
-        user = self.context["request"].user
-        if isinstance(data, str) and data.isdigit():
-            data = int(data)
-        elif isinstance(data, str) and "http" not in data and data != "":
-            raise ValidationError("invalid-document-id")
-
-        if isinstance(data, int):
-            try:
-                file = models.AuthenticatedUploadedFile.objects.get(pk=data, user=user)
-                return file.file
-            except models.AuthenticatedUploadedFile.DoesNotExist:
-                raise ValidationError(f"Can not find uploaded file {data} for user {user.pk}")
-
-        # Storing the value again, without changes: This is expected to be the original URL
-        raise SkipField()
-
-    def to_representation(self, value):
-        if not value:
-            return None
-
-        try:
-            url = value.url
-        except AttributeError:
-            return None
-        request = self.context.get("request", None)
-        if request is not None:
-            return request.build_absolute_uri(url)
-        return url
-
-
-class AuthenticatedUploadedFileSerializer(serializers.Serializer):
-
-    def save(self, **kwargs):
+    def clean_uploaded_files(self):
         for field_name, field_type in self.get_fields().items():
             if isinstance(field_type, AnonymousUploadedFileField) and field_name in self.validated_data:
                 models.AnonymousUploadedFile.objects.filter(file=self.validated_data[field_name]).delete()
-
-        return super().save(**kwargs)
-
-
-class AuthenticatedUploadedFileModelSerializer(serializers.ModelSerializer):
-
-    def save(self, **kwargs):
-        for field_name, field_type in self.get_fields().items():
             if isinstance(field_type, UploadedFileField) and field_name in self.validated_data:
                 models.AuthenticatedUploadedFile.objects.filter(file=self.validated_data[field_name]).delete()
 
+
+class UploadedFileSerializer(UploadedFileSerializerMixin, serializers.Serializer):
+
+    def save(self, **kwargs):
+        self.clean_uploaded_files()
         return super().save(**kwargs)
 
 
-class AnonymousUploadedFileField(serializers.Field):
-    requires_context = True
-
-    def to_internal_value(self, data):
-        if not isinstance(data, str):
-            raise ValidationError("invalid-uploaded-file")
-
-        is_new_file = not data.startswith("http")
-        if is_new_file:
-            try:
-                file = models.AnonymousUploadedFile.objects.get(uuid=data)
-                return file.file
-            except models.AnonymousUploadedFile.DoesNotExist:
-                raise ValidationError(f"Can not find uploaded file {data}")
-
-        # Storing the value again, without changes: This is expected to be the original URL
-        raise SkipField()
-
-    def to_representation(self, value):
-        if not value:
-            return None
-
-        try:
-            url = value.url
-        except AttributeError:
-            return None
-        request = self.context.get("request", None)
-        if request is not None:
-            return request.build_absolute_uri(url)
-        return url
-
-
-class AnonymousUploadedFileSerializer(serializers.Serializer):
+class UploadedFileModelSerializer(UploadedFileSerializerMixin, serializers.ModelSerializer):
 
     def save(self, **kwargs):
-        for field_name, field_type in self.get_fields().items():
-            if isinstance(field_type, AnonymousUploadedFileField) and field_name in self.validated_data:
-                models.AnonymousUploadedFile.objects.filter(file=self.validated_data[field_name]).delete()
-
-        return super().save(**kwargs)
-
-
-class AnonymousUploadedFileModelSerializer(serializers.ModelSerializer):
-
-    def save(self, **kwargs):
-        for field_name, field_type in self.get_fields().items():
-            if isinstance(field_type, AnonymousUploadedFileField) and field_name in self.validated_data:
-                models.AnonymousUploadedFile.objects.filter(file=self.validated_data[field_name]).delete()
-
+        self.clean_uploaded_files()
         return super().save(**kwargs)

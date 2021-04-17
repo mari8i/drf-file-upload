@@ -15,7 +15,7 @@ How it works
     POST https://example.com/api/upload/
     # A multipart request with a `file` field that contains your file 
 
-2. If upload is complete, an unique identifier for that file and a URL for accessing it are returned::
+2. If upload is complete, an unique identifier for that file is returned, along an URL for accessing it::
 
     {
        "url": "https://example.com/media/upload/file.png",

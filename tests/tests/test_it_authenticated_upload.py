@@ -9,11 +9,6 @@ from tests.tests.base_test import BaseDrfFileUploadTestCase
 API_ENDPOINT = "/upload/"
 
 
-class FakeRequest:
-    def __init__(self, user):
-        self.user = user
-
-
 class AuthenticatedFileUploadTestCase(BaseDrfFileUploadTestCase):
     def setUp(self):
         super().setUp()

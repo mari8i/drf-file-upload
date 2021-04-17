@@ -26,13 +26,23 @@ def get_anonymous_uploaded_file_path(instance, filename):
     return os.path.join("uploads/", filename)
 
 
+def generate_uuid():
+    return str(uuid.uuid4())
+
+
 class AuthenticatedUploadedFile(models.Model):
     file = models.FileField(blank=False, null=False, upload_to=get_authenticated_uploaded_file_path)
     created = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    uuid = models.CharField(unique=True, max_length=64, default=None, null=True)
 
     def __str__(self):
         return self.file.name
+
+    def save(self, **kwargs):
+        if self.id is None:
+            self.uuid = generate_uuid()
+        super().save(**kwargs)
 
 
 class AnonymousUploadedFile(models.Model):
@@ -45,7 +55,7 @@ class AnonymousUploadedFile(models.Model):
 
     def save(self, **kwargs):
         if self.id is None:
-            self.uuid = str(uuid.uuid4())
+            self.uuid = generate_uuid()
         super().save(**kwargs)
 
 

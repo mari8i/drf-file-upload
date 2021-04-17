@@ -2,7 +2,38 @@
 DRF File Upload
 ===============
 
-A library to simplify file upload with the Django Rest Framework
+A reusable django library to handle file upload with the Django Rest Framework.
+
+It provides views, serializers and models for simplifying file uploads and their model association in your RESTful application.
+
+ 
+How it works
+------------
+
+1. Upload the file using this library multi-part APIs.  
+
+```
+POST https://example.com/api/upload/
+# A multipart request with a `file` field that contains your file 
+```
+
+2. If upload is complete, an unique identifier for that file and a URL for accessing it are returned  
+
+```
+{
+   "url": "https://example.com/media/upload/file.png",
+   "uuid: "1ad29aa9-d470-442d-a5a3-5922e7ce0182"
+}
+```
+
+3. Use the `uuid` in your APIs for associating the uploaded file with your django model instance
+
+```
+{
+   [...],
+   "my-file-attribute": "1ad29aa9-d470-442d-a5a3-5922e7ce0182"
+}
+```
 
 Quick start
 -----------

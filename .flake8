@@ -1,0 +1,14 @@
+[flake8]
+max-line-length = 120
+max-complexity = 18
+select = B,C,E,F,W,T4,B9
+ignore=W503
+exclude =
+    .git,
+    .venv,
+    __pycache__,
+    zupitbot/settings.py,
+    zupitbot/wsgi.py
+    zupitbot/asgi.py
+    venv,
+    app/migrations

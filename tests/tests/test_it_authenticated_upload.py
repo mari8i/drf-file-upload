@@ -1,10 +1,11 @@
 from django.conf import settings
-from django.test import TestCase, RequestFactory
+from django.test import RequestFactory
 from rest_framework import status
 from rest_framework.test import APIClient
 
 from drf_file_upload import models
 from tests.tests import factory
+from tests.tests.base_test import BaseDrfFileUploadTestCase
 
 API_ENDPOINT = "/upload/"
 
@@ -15,15 +16,12 @@ class FakeRequest:
         self.user = user
 
 
-class AuthenticatedFileUploadTestCase(TestCase):
+class AuthenticatedFileUploadTestCase(BaseDrfFileUploadTestCase):
 
     def setUp(self):
+        super().setUp()
         self.client = APIClient()
-        self.request_factory = RequestFactory()
         self.user = factory.create_user()
-
-        settings.DRF_FILE_UPLOAD_MAX_SIZE = None
-        settings.DRF_FILE_UPLOAD_ALLOWED_FORMATS = None
 
     def test_file_upload_requires_logged_user(self):
         response = self.upload_file(authenticate=False)

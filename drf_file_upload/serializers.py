@@ -102,6 +102,16 @@ class UploadedFileField(serializers.Field):
         return url
 
 
+class AuthenticatedUploadedFileSerializer(serializers.Serializer):
+
+    def save(self, **kwargs):
+        for field_name, field_type in self.get_fields().items():
+            if isinstance(field_type, AnonymousUploadedFileField) and field_name in self.validated_data:
+                models.AnonymousUploadedFile.objects.filter(file=self.validated_data[field_name]).delete()
+
+        return super().save(**kwargs)
+
+
 class AuthenticatedUploadedFileModelSerializer(serializers.ModelSerializer):
 
     def save(self, **kwargs):
@@ -144,7 +154,17 @@ class AnonymousUploadedFileField(serializers.Field):
         return url
 
 
-class UploadedRegistrationFileFieldSerializer(serializers.Serializer):
+class AnonymousUploadedFileSerializer(serializers.Serializer):
+
+    def save(self, **kwargs):
+        for field_name, field_type in self.get_fields().items():
+            if isinstance(field_type, AnonymousUploadedFileField) and field_name in self.validated_data:
+                models.AnonymousUploadedFile.objects.filter(file=self.validated_data[field_name]).delete()
+
+        return super().save(**kwargs)
+
+
+class AnonymousUploadedFileModelSerializer(serializers.ModelSerializer):
 
     def save(self, **kwargs):
         for field_name, field_type in self.get_fields().items():

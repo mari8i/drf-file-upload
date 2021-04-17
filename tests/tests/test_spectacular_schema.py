@@ -1,12 +1,13 @@
 from django.core import management
-from django.test import TestCase
 
 from tests.tests import factory
+from tests.tests.base_test import BaseDrfFileUploadTestCase
 
 
-class TestSpectacularSchemaTestCase(TestCase):
+class TestSpectacularSchemaTestCase(BaseDrfFileUploadTestCase):
 
     def setUp(self):
+        super().setUp()
         self.user = factory.create_user()
 
     def test_spectacular_schema(self):

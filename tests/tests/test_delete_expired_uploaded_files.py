@@ -1,24 +1,34 @@
+import os
 from unittest.mock import patch
 
 from django.core import management
-from django.test import TestCase
 from django.utils import timezone
 
 from drf_file_upload import models
 from tests.tests import factory
+from tests.tests.base_test import BaseDrfFileUploadTestCase
 
 
-class TestDeleteExpiredUploadedFilesTestCase(TestCase):
+class TestDeleteExpiredUploadedFilesTestCase(BaseDrfFileUploadTestCase):
 
     def setUp(self):
+        super().setUp()
         self.user = factory.create_user()
+
+    def tearDown(self):
+        models.AnonymousUploadedFile.objects.all().delete()
+        models.AuthenticatedUploadedFile.objects.all().delete()
 
     def test_delete_expired_uploaded_files_deletes_expired_files(self):
         expired_date = factory.create_datetime(2021, 4, 17, 14, 2, 59)
         with patch.object(timezone, "now", return_value=expired_date):
-            factory.create_authenticated_uploaded_file(self.user)
-            factory.create_authenticated_uploaded_file(self.user)
-            factory.create_anonymous_uploaded_file()
+            auth_exp_1 = factory.create_authenticated_uploaded_file(self.user)
+            auth_exp_2 = factory.create_authenticated_uploaded_file(self.user)
+            anon_exp_1 = factory.create_anonymous_uploaded_file()
+
+        self.assertTrue(os.path.isfile(auth_exp_1.file.path))
+        self.assertTrue(os.path.isfile(auth_exp_2.file.path))
+        self.assertTrue(os.path.isfile(anon_exp_1.file.path))
 
         not_expired_date = factory.create_datetime(2021, 4, 17, 14, 3)
         with patch.object(timezone, "now", return_value=not_expired_date):
@@ -40,3 +50,7 @@ class TestDeleteExpiredUploadedFilesTestCase(TestCase):
 
         for anon_valid in (anon_valid_1, anon_valid_2, anon_valid_3):
             self.assertTrue(models.AnonymousUploadedFile.objects.filter(pk=anon_valid.id).exists())
+
+        self.assertFalse(os.path.exists(auth_exp_1.file.path))
+        self.assertFalse(os.path.exists(auth_exp_2.file.path))
+        self.assertFalse(os.path.exists(anon_exp_1.file.path))

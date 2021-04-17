@@ -7,19 +7,17 @@ from rest_framework.test import APIClient
 
 from drf_file_upload import models
 from tests.tests import factory
+from tests.tests.base_test import BaseDrfFileUploadTestCase
 
 API_ENDPOINT = "/anonymous-upload/"
 
 
-class AuthenticatedFileUploadTestCase(TestCase):
+class AuthenticatedFileUploadTestCase(BaseDrfFileUploadTestCase):
 
     def setUp(self):
+        super().setUp()
+
         self.client = APIClient()
-
-        self.request_factory = RequestFactory()
-
-        settings.DRF_FILE_UPLOAD_MAX_SIZE = None
-        settings.DRF_FILE_UPLOAD_ALLOWED_FORMATS = None
 
     def test_anon_user_can_upload_file(self):
         response = self.upload_file()

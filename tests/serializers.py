@@ -12,3 +12,12 @@ class TestUserFileUploadSerializer(dfu_serializers.AuthenticatedUploadedFileMode
     class Meta:
         model = test_models.TestUserFileUpload
         fields = ("user", "file", "created")
+
+
+class TestAnonFileUploadSerializer(dfu_serializers.AnonymousUploadedFileModelSerializer):
+
+    file = dfu_serializers.AnonymousUploadedFileField(required=True, allow_null=False)
+
+    class Meta:
+        model = test_models.TestAnonFileUpload
+        fields = ("file", "created")

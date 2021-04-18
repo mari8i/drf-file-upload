@@ -1,12 +1,10 @@
 import os
 import re
 
-from django.conf import settings
 from rest_framework import status
 from rest_framework.test import APIClient
 
 from drf_file_upload import models
-from drf_file_upload import settings as lib_settings
 from tests.tests import factory
 from tests.tests.base_test import BaseDrfFileUploadTestCase
 
@@ -43,38 +41,34 @@ class AuthenticatedFileUploadTestCase(BaseDrfFileUploadTestCase):
         self.assertTrue(os.path.exists(auth_uploaded_file.file.path))
 
     def test_upload_file_max_size_returns_error_with_file_too_large(self):
-        settings.REST_FRAMEWORK_FILE_UPLOAD[lib_settings.MAX_FILE_SIZE] = 100
-        response = self.upload_file()
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        error = response.json()
-        self.assertTrue("file" in error)
-        self.assertEqual(error["file"], ["file-too-large"])
+        with self.settings(REST_FRAMEWORK_FILE_UPLOAD={"MAX_FILE_SIZE": 100}):
+            response = self.upload_file()
+            self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+            error = response.json()
+            self.assertTrue("file" in error)
+            self.assertEqual(error["file"], ["file-too-large"])
 
     def test_upload_file_max_size(self):
-        settings.REST_FRAMEWORK_FILE_UPLOAD[lib_settings.MAX_FILE_SIZE] = 100000
-        response = self.upload_file()
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        with self.settings(REST_FRAMEWORK_FILE_UPLOAD={"MAX_FILE_SIZE": 100000}):
+            response = self.upload_file()
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_upload_file_allowed_type_returns_error_with_invalid_type(self):
-        settings.REST_FRAMEWORK_FILE_UPLOAD[lib_settings.ALLOWED_FORMATS] = {"image/png", "image/jpg"}
+        with self.settings(REST_FRAMEWORK_FILE_UPLOAD={"ALLOWED_FORMATS": {"image/png", "image/jpg"}}):
+            response = self.upload_file(filename="invalid.pdf")
 
-        response = self.upload_file(filename="invalid.pdf")
-
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        error = response.json()
-        self.assertTrue("file" in error)
-        self.assertEqual(error["file"], ["invalid-file-format"])
+            self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+            error = response.json()
+            self.assertTrue("file" in error)
+            self.assertEqual(error["file"], ["invalid-file-format"])
 
     def test_upload_file_allowed_type(self):
-        settings.REST_FRAMEWORK_FILE_UPLOAD[lib_settings.ALLOWED_FORMATS] = {
-            "image/png",
-            "image/jpg",
-            "application/pdf",
-        }
+        with self.settings(
+            REST_FRAMEWORK_FILE_UPLOAD={"ALLOWED_FORMATS": {"image/png", "image/jpg", "application/pdf"}}
+        ):
+            response = self.upload_file(filename="valid.pdf")
 
-        response = self.upload_file(filename="valid.pdf")
-
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_delete_uploaded_file(self):
         self.client.force_authenticate(self.user)

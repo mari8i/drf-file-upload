@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.test import TestCase
 
 from drf_file_upload import models
@@ -16,7 +15,7 @@ class FakeRequest:
 
 class BaseDrfFileUploadTestCase(TestCase):
     def setUp(self):
-        settings.REST_FRAMEWORK_FILE_UPLOAD = {"max_file_size": None, "allowed_formats": None}
+        pass
 
     def tearDown(self):
         models.AnonymousUploadedFile.objects.all().delete()

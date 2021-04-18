@@ -6,25 +6,27 @@ from django.core.files.storage import default_storage
 from django.db import models
 from django.dispatch import receiver
 
+from drf_file_upload.settings import lib_settings
+
 
 def get_authenticated_uploaded_file_path(instance, filename):
-    ext = filename.split(".")[-1]
+    filename_provider_class = lib_settings.AUTH_FILENAME_PROVIDER
+    base_dir = lib_settings.AUTH_MEDIA_DIR
 
-    # TODO: A setting for the file name too?
-    filename = "%s.%s" % (uuid.uuid4(), ext)
+    filename_provider = filename_provider_class()
+    filename = filename_provider.get_filename(filename, user=instance.user)
 
-    # TODO: Create a setting
-    return os.path.join("files/", filename)
+    return os.path.join(base_dir, filename)
 
 
 def get_anonymous_uploaded_file_path(instance, filename):
-    ext = filename.split(".")[-1]
+    filename_provider_class = lib_settings.ANON_FILENAME_PROVIDER
+    base_dir = lib_settings.ANON_MEDIA_DIR
 
-    # TODO: A setting for the file name too?
-    filename = "%s.%s" % (uuid.uuid4(), ext)
+    filename_provider = filename_provider_class()
+    filename = filename_provider.get_filename(filename)
 
-    # TODO: Create a setting
-    return os.path.join("uploads/", filename)
+    return os.path.join(base_dir, filename)
 
 
 def generate_uuid():

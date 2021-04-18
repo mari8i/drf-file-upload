@@ -44,6 +44,12 @@ class AuthenticatedUploadedFile(models.Model):
             self.uuid = generate_uuid()
         super().save(**kwargs)
 
+    def delete(self, *args, **kwargs):
+        keep_file = kwargs.pop("keep_file", False)
+        if keep_file:
+            self.file = None
+        return super().delete(*args, **kwargs)
+
 
 class AnonymousUploadedFile(models.Model):
     file = models.FileField(blank=False, null=False, upload_to=get_anonymous_uploaded_file_path)
@@ -58,10 +64,16 @@ class AnonymousUploadedFile(models.Model):
             self.uuid = generate_uuid()
         super().save(**kwargs)
 
+    def delete(self, *args, **kwargs):
+        keep_file = kwargs.pop("keep_file", False)
+        if keep_file:
+            self.file = None
+        return super().delete(*args, **kwargs)
 
-def delete_file_if_exists(instance):
-    if instance.file and os.path.isfile(instance.file.path):
-        os.remove(instance.file.path)
+
+def delete_file_if_exists(file):
+    if file and os.path.isfile(file.path):
+        os.remove(file.path)
 
 
 def delete_file_on_change(model, instance):
@@ -75,13 +87,12 @@ def delete_file_on_change(model, instance):
 
     new_file = instance.file
     if old_file and old_file != new_file:
-        if os.path.isfile(old_file.path):
-            os.remove(old_file.path)
+        delete_file_if_exists(old_file)
 
 
 @receiver(models.signals.post_delete, sender=AuthenticatedUploadedFile)
 def delete_files_on_auth_uploaded_file_delete(sender, instance, **kwargs):
-    delete_file_if_exists(instance)
+    delete_file_if_exists(instance.file)
 
 
 @receiver(models.signals.pre_save, sender=AuthenticatedUploadedFile)
@@ -91,7 +102,7 @@ def delete_files_on_auth_uploaded_file_change(sender, instance, **kwargs):
 
 @receiver(models.signals.post_delete, sender=AnonymousUploadedFile)
 def delete_files_on_anon_uploaded_file_delete(sender, instance, **kwargs):
-    delete_file_if_exists(instance)
+    delete_file_if_exists(instance.file)
 
 
 @receiver(models.signals.pre_save, sender=AnonymousUploadedFile)

@@ -1,3 +1,6 @@
+import os
+import re
+
 from django.conf import settings
 from rest_framework import status
 from rest_framework.test import APIClient
@@ -27,12 +30,16 @@ class AuthenticatedFileUploadTestCase(BaseDrfFileUploadTestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         response_data = response.json()
-        self.assertTrue(response_data["id"] > 0)
+        self.assertTrue("uuid" in response_data)
+        self.assertTrue("file" in response_data)
+        self.assertTrue(re.match(r"\w{8}-\w{4}-\w{4}-\w{4}-\w{12}", response_data["uuid"]))
         self.assertTrue(response_data["file"].startswith("http"))
 
-        auth_uploaded_file = models.AuthenticatedUploadedFile.objects.get(id=response_data["id"])
+        auth_uploaded_file = models.AuthenticatedUploadedFile.objects.get(uuid=response_data["uuid"])
         self.assertIsNotNone(auth_uploaded_file.file)
         self.assertEqual(auth_uploaded_file.user, self.user)
+
+        self.assertTrue(os.path.exists(auth_uploaded_file.file.path))
 
     def test_upload_file_max_size_returns_error_with_file_too_large(self):
         settings.DRF_FILE_UPLOAD_MAX_SIZE = 100
@@ -63,6 +70,16 @@ class AuthenticatedFileUploadTestCase(BaseDrfFileUploadTestCase):
         response = self.upload_file(filename="valid.pdf")
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_delete_uploaded_file(self):
+        self.client.force_authenticate(self.user)
+
+        uploaded_file = factory.create_authenticated_uploaded_file(self.user)
+
+        response = self.client.delete(f"{API_ENDPOINT}{uploaded_file.uuid}/")
+        self.assertEquals(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        self.assertFalse(os.path.exists(uploaded_file.file.path))
 
     def upload_file(self, filename="test_file.pdf", authenticate=True):
         if authenticate:

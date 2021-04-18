@@ -1,3 +1,4 @@
+import os
 import re
 
 from django.conf import settings
@@ -27,8 +28,10 @@ class AuthenticatedFileUploadTestCase(BaseDrfFileUploadTestCase):
         self.assertTrue(re.match(r"\w{8}-\w{4}-\w{4}-\w{4}-\w{12}", response_data["uuid"]))
         self.assertTrue(response_data["file"].startswith("http"))
 
-        auth_uploaded_file = models.AnonymousUploadedFile.objects.get(uuid=response_data["uuid"])
-        self.assertIsNotNone(auth_uploaded_file.file)
+        anon_uploaded_file = models.AnonymousUploadedFile.objects.get(uuid=response_data["uuid"])
+        self.assertIsNotNone(anon_uploaded_file.file)
+
+        self.assertTrue(os.path.exists(anon_uploaded_file.file.path))
 
     def test_upload_file_max_size_returns_error_with_file_too_large(self):
         settings.DRF_FILE_UPLOAD_MAX_SIZE = 100
@@ -59,6 +62,14 @@ class AuthenticatedFileUploadTestCase(BaseDrfFileUploadTestCase):
         response = self.upload_file(filename="valid.pdf")
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_delete_uploaded_file(self):
+        uploaded_file = factory.create_anonymous_uploaded_file()
+
+        response = self.client.delete(f"{API_ENDPOINT}{uploaded_file.uuid}/")
+        self.assertEquals(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        self.assertFalse(os.path.exists(uploaded_file.file.path))
 
     def upload_file(self, filename="test_file.pdf"):
         file = factory.create_simple_uploaded_file(filename=filename)

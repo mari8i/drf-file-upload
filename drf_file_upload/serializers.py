@@ -34,8 +34,8 @@ class AuthenticatedUploadFileSerializer(UploadFileValidationMixin, serializers.M
 
     class Meta:
         model = models.AuthenticatedUploadedFile
-        fields = ["file", "user", "id"]
-        read_only_fields = ["id"]
+        fields = ["file", "user", "uuid"]
+        read_only_fields = ["uuid"]
         # swagger_schema_fields = {
         #     "type": openapi.TYPE_OBJECT,
         #     "title": "Upload file",
@@ -71,9 +71,11 @@ class UploadedFileSerializerMixin:
     def clean_uploaded_files(self):
         for field_name, field_type in self.get_fields().items():
             if isinstance(field_type, AnonymousUploadedFileField) and field_name in self.validated_data:
-                models.AnonymousUploadedFile.objects.filter(file=self.validated_data[field_name]).delete()
+                instance = models.AnonymousUploadedFile.objects.get(file=self.validated_data[field_name])
+                instance.delete(keep_file=True)
             if isinstance(field_type, UploadedFileField) and field_name in self.validated_data:
-                models.AuthenticatedUploadedFile.objects.filter(file=self.validated_data[field_name]).delete()
+                instance = models.AuthenticatedUploadedFile.objects.get(file=self.validated_data[field_name])
+                instance.delete(keep_file=True)
 
 
 class UploadedFileSerializer(UploadedFileSerializerMixin, serializers.Serializer):

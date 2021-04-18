@@ -1,3 +1,5 @@
+import os
+
 from rest_framework.test import APIClient
 
 from drf_file_upload import models
@@ -31,6 +33,10 @@ class AnonymousFileUploadTestCase(BaseDrfFileUploadTestCase):
             models.AuthenticatedUploadedFile.objects.filter(id=self.uploaded_file.id).exists(),
             "Uploaded file instance is deleted on save",
         )
+
+        self.assertTrue(os.path.isfile(test_file_model.file.path), "File on filesystem is preserved")
+
+        os.remove(test_file_model.file.path)
 
     def test_upload_model_serializer_invalid_data(self):
         sut = self.create_serializer("definitely-not-this-uuid")

@@ -2,6 +2,7 @@ import os
 import uuid
 
 from django.conf import settings
+from django.core.files.storage import default_storage
 from django.db import models
 from django.dispatch import receiver
 
@@ -72,8 +73,8 @@ class AnonymousUploadedFile(models.Model):
 
 
 def delete_file_if_exists(file):
-    if file and os.path.isfile(file.path):
-        os.remove(file.path)
+    if file and default_storage.exists(file.path):
+        default_storage.delete(file.path)
 
 
 def delete_file_on_change(model, instance):

@@ -1,10 +1,9 @@
 import mimetypes
 
-from django.conf import settings
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from drf_file_upload import models
+from drf_file_upload import models, settings
 from drf_file_upload.fields import AnonymousUploadedFileField, UploadedFileField
 
 
@@ -17,16 +16,19 @@ class UploadFileValidationMixin:
         return value
 
     def is_supported_file(self, file):
-        if not hasattr(settings, "DRF_FILE_UPLOAD_ALLOWED_FORMATS") or not settings.DRF_FILE_UPLOAD_ALLOWED_FORMATS:
+        allowed_formats = settings.get_setting_or_default(settings.ALLOWED_FORMATS, None)
+
+        if not allowed_formats:
             return True
 
         mimetype = mimetypes.guess_type(file)[0]
-        return mimetype in settings.DRF_FILE_UPLOAD_ALLOWED_FORMATS
+        return mimetype in allowed_formats
 
     def respects_filesize_limit(self, size):
-        if not hasattr(settings, "DRF_FILE_UPLOAD_MAX_SIZE") or not settings.DRF_FILE_UPLOAD_MAX_SIZE:
+        max_file_size = settings.get_setting_or_default(settings.MAX_FILE_SIZE, None)
+        if not max_file_size:
             return True
-        return size <= settings.DRF_FILE_UPLOAD_MAX_SIZE
+        return size <= max_file_size
 
 
 class AuthenticatedUploadFileSerializer(UploadFileValidationMixin, serializers.ModelSerializer):

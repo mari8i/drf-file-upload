@@ -16,8 +16,7 @@ class FakeRequest:
 
 class BaseDrfFileUploadTestCase(TestCase):
     def setUp(self):
-        settings.DRF_FILE_UPLOAD_MAX_SIZE = None
-        settings.DRF_FILE_UPLOAD_ALLOWED_FORMATS = None
+        settings.REST_FRAMEWORK_FILE_UPLOAD = {"max_file_size": None, "allowed_formats": None}
 
     def tearDown(self):
         models.AnonymousUploadedFile.objects.all().delete()

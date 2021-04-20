@@ -71,5 +71,5 @@ TODO: Improve https://docs.djangoproject.com/en/3.1/intro/reusable-apps/
 - check if `clean_uploaded_files` can be called somewhere else to avoid `save` method override
 - Documentation!
 - Check if the file field can be set globally for all model FileFields
-
+- Add better spectacle openapi docs
 

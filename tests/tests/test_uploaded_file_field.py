@@ -17,7 +17,7 @@ class UploadedFileFieldTestCase(BaseDrfFileUploadTestCase):
 
     def test_to_internal_field_with_valid_uuid_returns_uploaded_file_instance(self):
         file = factory.create_authenticated_uploaded_file(self.user, "nice_pic.png")
-        value = self.sut.to_internal_value(file.uuid)
+        value = self.sut.to_internal_value(str(file.uuid))
         self.assertIsInstance(value, FieldFile)
 
     def test_to_internal_field_parameter_must_be_string(self):
@@ -45,7 +45,7 @@ class UploadedFileFieldTestCase(BaseDrfFileUploadTestCase):
             self.sut.to_internal_value("f" * 36)
 
         self.assertEquals(error.exception.detail[0].code, "invalid")
-        self.assertEquals(str(error.exception.detail[0]), "uploaded-file-uuid-not-found")
+        self.assertEquals(str(error.exception.detail[0]), "uploaded-file-invalid-uuid")
 
     def test_to_internal_skips_if_url_is_given(self):
         with self.assertRaises(SkipField):

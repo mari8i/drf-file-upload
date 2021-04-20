@@ -44,6 +44,6 @@ class AuthenticatedFileUploadTestCase(BaseDrfFileUploadTestCase):
 
     def create_serializer(self, file_id):
         sut = test_serializers.TestUserFileUploadSerializer(
-            data={"file": file_id}, context={"request": FakeRequest(self.user)}
+            data={"file": str(file_id)}, context={"request": FakeRequest(self.user)}
         )
         return sut

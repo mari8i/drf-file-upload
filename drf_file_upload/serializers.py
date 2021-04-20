@@ -91,3 +91,8 @@ class UploadedFileModelSerializer(UploadedFileSerializerMixin, serializers.Model
     def save(self, **kwargs):
         self.clean_uploaded_files()
         return super().save(**kwargs)
+
+
+class UploadFileRequestSerializer(serializers.Serializer):
+
+    file = serializers.FileField()

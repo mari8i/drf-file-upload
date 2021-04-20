@@ -1,3 +1,7 @@
+import uuid
+
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import SkipField
@@ -5,6 +9,7 @@ from rest_framework.fields import SkipField
 from drf_file_upload import models
 
 
+@extend_schema_field(OpenApiTypes.STR)
 class AbstractUploadedFileField(serializers.Field):
     requires_context = True
 
@@ -12,13 +17,12 @@ class AbstractUploadedFileField(serializers.Field):
         if not isinstance(data, str):
             raise ValidationError("uploaded-file-invalid-uploaded-file")
 
-        is_new_file = not data.startswith("http")
-
-        if is_new_file:
-            if len(data) != 36:
-                raise ValidationError("uploaded-file-invalid-uuid")
-
+        try:
+            uuid.UUID(data)
             return self.fetch_file_or_error(data)
+        except ValueError:
+            if not data.startswith("http://") and not data.startswith("https://"):
+                raise ValidationError("uploaded-file-invalid-uuid")
 
         # Storing the value again, without changes: This is expected to be the original URL
         raise SkipField()

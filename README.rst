@@ -62,3 +62,14 @@ Todo: add single view examples
 5. Run the cleanup management command `deleted_expired_uploaded_files` in a cron task or add a celery task
 
 TODO: Improve https://docs.djangoproject.com/en/3.1/intro/reusable-apps/
+
+### TODOs & IDEAS
+
+- Add support for Image file
+- check if DRF dedicated fields can be exploited
+- lots of config (e.g. `permission_classes`)
+- check if `clean_uploaded_files` can be called somewhere else to avoid `save` method override
+- Documentation!
+- Check if the file field can be set globally for all model FileFields
+
+

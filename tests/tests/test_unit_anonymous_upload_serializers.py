@@ -47,5 +47,5 @@ class AnonymousFileUploadTestCase(BaseDrfFileUploadTestCase):
         self.assertEqual(sut.errors["file"][0].code, "invalid")
 
     def create_serializer(self, file_uuid):
-        sut = test_serializers.TestAnonFileUploadSerializer(data={"file": file_uuid})
+        sut = test_serializers.TestAnonFileUploadSerializer(data={"file": str(file_uuid)})
         return sut

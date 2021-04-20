@@ -6,14 +6,14 @@ A reusable django library to handle file upload with the Django Rest Framework.
 
 It provides views, serializers and models for simplifying file uploads and their model association in your RESTful application.
 
- 
+
 How it works
 ------------
 
 1. Upload the file using this library multi-part APIs::
 
     POST https://example.com/api/upload/
-    # A multipart request with a `file` field that contains your file 
+    # A multipart request with a `file` field that contains your file
 
 2. If upload is complete, an unique identifier for that file is returned, along an URL for accessing it::
 
@@ -72,4 +72,3 @@ TODO: Improve https://docs.djangoproject.com/en/3.1/intro/reusable-apps/
 - Documentation!
 - Check if the file field can be set globally for all model FileFields
 - Add better spectacle openapi docs
-

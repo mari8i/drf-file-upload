@@ -16,7 +16,9 @@ class AuthenticatedFileUploadView(mixins.CreateModelMixin, mixins.DestroyModelMi
     def get_queryset(self):
         return models.AuthenticatedUploadedFile.objects.filter(user_id=self.request.user.id)
 
-    @extend_schema(request=serializers.UploadFileRequestSerializer, responses={200: serializers.AuthenticatedUploadFileSerializer})
+    @extend_schema(
+        request=serializers.UploadFileRequestSerializer, responses={200: serializers.AuthenticatedUploadFileSerializer}
+    )
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
 
@@ -30,6 +32,8 @@ class AnonymousFileUploadView(mixins.CreateModelMixin, mixins.DestroyModelMixin,
     def get_queryset(self):
         return models.AnonymousUploadedFile.objects.all()
 
-    @extend_schema(request=serializers.UploadFileRequestSerializer, responses={200: serializers.AnonymousUploadFileSerializer})
+    @extend_schema(
+        request=serializers.UploadFileRequestSerializer, responses={200: serializers.AnonymousUploadFileSerializer}
+    )
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)

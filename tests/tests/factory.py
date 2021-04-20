@@ -2,9 +2,9 @@ import io
 from datetime import datetime
 
 import pytz
-from PIL import Image
 from django.contrib.auth.models import User
 from django.core.files import File
+from PIL import Image
 
 from drf_file_upload import models
 

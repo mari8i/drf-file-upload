@@ -29,10 +29,6 @@ def get_anonymous_uploaded_file_path(instance, filename):
     return os.path.join(base_dir, filename)
 
 
-def generate_uuid():
-    return str(uuid.uuid4())
-
-
 class AuthenticatedUploadedFile(models.Model):
     file = models.FileField(blank=False, null=False, upload_to=get_authenticated_uploaded_file_path)
     created = models.DateTimeField(auto_now_add=True)

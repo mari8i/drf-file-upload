@@ -1,10 +1,8 @@
 import logging
-from datetime import timedelta
 
 from django.core.management.base import BaseCommand
-from django.utils import timezone
 
-from drf_file_upload import models
+from drf_file_upload.cleanup import cleanup_expired_uploaded_files
 
 logger = logging.getLogger("DrfFileUploadExpiredFiles")
 
@@ -22,9 +20,5 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        delete_before = timezone.now() - timedelta(seconds=options["seconds"])
-        deleted, _ = models.AuthenticatedUploadedFile.objects.filter(created__lt=delete_before).delete()
-        logger.info(f"Deleted {deleted} unused authenticated uploaded files")
-
-        deleted, _ = models.AnonymousUploadedFile.objects.filter(created__lt=delete_before).delete()
-        logger.info(f"Deleted {deleted} unused anonymous uploaded files")
+        logger.info("Cleaning up expired uploaded files")
+        cleanup_expired_uploaded_files(options["seconds"])

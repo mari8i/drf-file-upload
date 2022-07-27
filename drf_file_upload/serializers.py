@@ -49,6 +49,16 @@ class AnonymousUploadFileSerializer(UploadFileValidationMixin, serializers.Model
 
 
 class UploadedFileSerializerMixin:
+    metadata_uploaded_files_mapping = None
+
+    """
+    Example:
+
+    metadata_uploaded_files_mapping = {
+        "file": [("file", "file"), ("size", "size"), ("name", "name")]
+    }
+    """
+
     def clean_uploaded_files(self):
         for field_name, field_type in self.get_fields().items():
             if isinstance(field_type, AnonymousUploadedFileField) and field_name in self.validated_data:
@@ -58,17 +68,25 @@ class UploadedFileSerializerMixin:
                 instance = models.AuthenticatedUploadedFile.objects.get(file=self.validated_data[field_name])
                 instance.delete(keep_file=True)
 
-
-class UploadedFileSerializer(UploadedFileSerializerMixin, serializers.Serializer):
     def save(self, **kwargs):
         self.clean_uploaded_files()
         return super().save(**kwargs)
+
+    def validate(self, attrs):
+        if isinstance(self.metadata_uploaded_files_mapping, dict):
+            for mapped_field, mappings in self.metadata_uploaded_files_mapping.items():
+                value = attrs[mapped_field]
+                for src_mapping, dst_mapping in mappings:
+                    attrs[dst_mapping] = value[src_mapping]
+        return attrs
+
+
+class UploadedFileSerializer(UploadedFileSerializerMixin, serializers.Serializer):
+    pass
 
 
 class UploadedFileModelSerializer(UploadedFileSerializerMixin, serializers.ModelSerializer):
-    def save(self, **kwargs):
-        self.clean_uploaded_files()
-        return super().save(**kwargs)
+    pass
 
 
 class UploadFileRequestSerializer(serializers.Serializer):

@@ -29,35 +29,37 @@ def get_anonymous_uploaded_file_path(instance, filename):
     return os.path.join(base_dir, filename)
 
 
-class AuthenticatedUploadedFile(models.Model):
+class AbstractUploadedFile(models.Model):
+    created = models.DateTimeField(auto_now_add=True)
+    uuid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=254, null=True, editable=False)
+    size = models.PositiveBigIntegerField(null=True, editable=False)
+
+    class Meta:
+        abstract = True
+
+    def __str__(self):
+        return self.name
+
+    def save(self, **kwargs):
+        self.name = self.file.name
+        self.size = self.file.size
+        return super().save(**kwargs)
+
+    def delete(self, *args, **kwargs):
+        keep_file = kwargs.pop("keep_file", False)
+        if keep_file:
+            self.file = None
+        return super().delete(*args, **kwargs)
+
+
+class AuthenticatedUploadedFile(AbstractUploadedFile):
     file = models.FileField(blank=False, null=False, upload_to=get_authenticated_uploaded_file_path)
-    created = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    uuid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
-
-    def __str__(self):
-        return self.file.name
-
-    def delete(self, *args, **kwargs):
-        keep_file = kwargs.pop("keep_file", False)
-        if keep_file:
-            self.file = None
-        return super().delete(*args, **kwargs)
 
 
-class AnonymousUploadedFile(models.Model):
+class AnonymousUploadedFile(AbstractUploadedFile):
     file = models.FileField(blank=False, null=False, upload_to=get_anonymous_uploaded_file_path)
-    uuid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
-    created = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.file.name
-
-    def delete(self, *args, **kwargs):
-        keep_file = kwargs.pop("keep_file", False)
-        if keep_file:
-            self.file = None
-        return super().delete(*args, **kwargs)
 
 
 def delete_file_if_exists(file):

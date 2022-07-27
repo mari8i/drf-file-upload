@@ -37,37 +37,15 @@ class AuthenticatedUploadFileSerializer(UploadFileValidationMixin, serializers.M
 
     class Meta:
         model = models.AuthenticatedUploadedFile
-        fields = ["file", "user", "uuid"]
-        read_only_fields = ["uuid"]
-        # swagger_schema_fields = {
-        #     "type": openapi.TYPE_OBJECT,
-        #     "title": "Upload file",
-        #     "properties": {
-        #         "id": openapi.Schema(title="File Id", type=openapi.TYPE_NUMBER, read_only=True),
-        #         "file": openapi.Schema(
-        #             title="Multipart file",
-        #             type=openapi.TYPE_STRING,
-        #         ),
-        #     },
-        # }
+        fields = ["file", "user", "uuid", "size", "name"]
+        read_only_fields = ["uuid", "user", "size", "name"]
 
 
 class AnonymousUploadFileSerializer(UploadFileValidationMixin, serializers.ModelSerializer):
     class Meta:
         model = models.AnonymousUploadedFile
-        fields = ["file", "uuid"]
-        read_only_fields = ["uuid"]
-        # swagger_schema_fields = {
-        #     "type": openapi.TYPE_OBJECT,
-        #     "title": "Upload file",
-        #     "properties": {
-        #         "uuid": openapi.Schema(title="File Unique ID", type=openapi.TYPE_STRING, read_only=True),
-        #         "file": openapi.Schema(
-        #             title="Multipart file",
-        #             type=openapi.TYPE_STRING,
-        #         ),
-        #     },
-        # }
+        fields = ["file", "uuid", "size", "name"]
+        read_only_fields = ["uuid", "size", "name"]
 
 
 class UploadedFileSerializerMixin:

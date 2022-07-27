@@ -61,3 +61,12 @@ class AnonymousUploadedFileField(AbstractUploadedFileField):
             return file.file
         except models.AnonymousUploadedFile.DoesNotExist:
             raise ValidationError("uploaded-file-uuid-not-found")
+
+
+class MetadataUploadedFileField(AbstractUploadedFileField):
+    def fetch_file_or_error(self, uuid):
+        user = self.context["request"].user
+        try:
+            return models.AuthenticatedUploadedFile.objects.get(uuid=uuid, user=user)
+        except models.AuthenticatedUploadedFile.DoesNotExist:
+            raise ValidationError("uploaded-file-uuid-not-found")

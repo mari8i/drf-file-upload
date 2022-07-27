@@ -40,6 +40,23 @@ class AuthenticatedFileUploadTestCase(BaseDrfFileUploadTestCase):
 
         self.assertTrue(os.path.exists(auth_uploaded_file.file.path))
 
+    def test_upload_filename_with_uuid_provider(self):
+        with self.settings(REST_FRAMEWORK_FILE_UPLOAD={"AUTH_FILENAME_PROVIDER": "drf_file_upload.filenames.UUIDFilenameProvider"}):
+            response = self.upload_file()
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+            response_data = response.json()
+            self.assertTrue("uuid" in response_data)
+            self.assertTrue("file" in response_data)
+            self.assertTrue(re.match(r"\w{8}-\w{4}-\w{4}-\w{4}-\w{12}", response_data["uuid"]))
+            self.assertTrue(response_data["file"].startswith("http"))
+
+            auth_uploaded_file = models.AuthenticatedUploadedFile.objects.get(uuid=response_data["uuid"])
+            self.assertIsNotNone(auth_uploaded_file.file)
+            self.assertEqual(auth_uploaded_file.user, self.user)
+
+            self.assertTrue(os.path.exists(auth_uploaded_file.file.path))
+
     def test_upload_file_max_size_returns_error_with_file_too_large(self):
         with self.settings(REST_FRAMEWORK_FILE_UPLOAD={"MAX_FILE_SIZE": 100}):
             response = self.upload_file()

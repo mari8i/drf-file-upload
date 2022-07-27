@@ -74,11 +74,15 @@ class UploadedFileSerializerMixin:
 
     def validate(self, attrs):
         if isinstance(self.metadata_uploaded_files_mapping, dict):
-            for mapped_field, mappings in self.metadata_uploaded_files_mapping.items():
-                value = attrs[mapped_field]
+            self.map_metadata_file_uploads(attrs)
+        return attrs
+
+    def map_metadata_file_uploads(self, attrs):
+        for mapped_field, mappings in self.metadata_uploaded_files_mapping.items():
+            value = attrs.get(mapped_field)
+            if value:
                 for src_mapping, dst_mapping in mappings:
                     attrs[dst_mapping] = value[src_mapping]
-        return attrs
 
 
 class UploadedFileSerializer(UploadedFileSerializerMixin, serializers.Serializer):

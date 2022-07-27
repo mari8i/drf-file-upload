@@ -67,6 +67,11 @@ class MetadataUploadedFileField(AbstractUploadedFileField):
     def fetch_file_or_error(self, uuid):
         user = self.context["request"].user
         try:
-            return models.AuthenticatedUploadedFile.objects.get(uuid=uuid, user=user)
+            file = models.AuthenticatedUploadedFile.objects.get(uuid=uuid, user=user)
+            return {
+                "file": file.file,
+                "size": file.size,
+                "name": file.name
+            }
         except models.AuthenticatedUploadedFile.DoesNotExist:
             raise ValidationError("uploaded-file-uuid-not-found")

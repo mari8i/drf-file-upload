@@ -11,3 +11,11 @@ class TestUserFileUpload(viewsets.ModelViewSet):
     queryset = models.TestUserFileUpload.objects.all()
 
     parser_classes = [JSONParser]
+
+
+class TestUserMetadataFileUpload(viewsets.ModelViewSet):
+    serializer_class = serializers.TestUserFileMetadataUploadSerializer
+    permission_classes = [IsAuthenticated]
+    queryset = models.TestMetadataUserFileUpload.objects.all()
+
+    parser_classes = [JSONParser]

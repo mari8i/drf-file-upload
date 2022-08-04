@@ -34,7 +34,8 @@ def create_datetime(year, month, day, hour, minutes=0, seconds=0):
 
 def create_authenticated_uploaded_file(user, filename="test_file.pdf", size=(100, 100)):
     file_contents = create_simple_uploaded_file(filename=filename, size=size)
-    return models.AuthenticatedUploadedFile.objects.create(file=File(file_contents), user=user)
+    return models.AuthenticatedUploadedFile.objects.create(file=File(file_contents), user=user,
+                                                           size=size[0] * size[1], name=filename)
 
 
 def create_anonymous_uploaded_file(filename="test_file.pdf", size=(100, 100)):

@@ -4,7 +4,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from drf_file_upload import models
-from drf_file_upload.fields import AnonymousUploadedFileField, UploadedFileField
+from drf_file_upload.fields import AnonymousUploadedFileField, UploadedFileField, MetadataUploadedFileField
 from drf_file_upload.settings import lib_settings
 
 
@@ -59,12 +59,18 @@ class UploadedFileSerializerMixin:
     }
     """
 
+    def _is_anon_field(self, field_type):
+        return isinstance(field_type, AnonymousUploadedFileField)
+
+    def _is_auth_field(self, field_type):
+        return isinstance(field_type, UploadedFileField) or isinstance(field_type, MetadataUploadedFileField)
+
     def clean_uploaded_files(self):
         for field_name, field_type in self.get_fields().items():
-            if isinstance(field_type, AnonymousUploadedFileField) and field_name in self.validated_data:
+            if self._is_anon_field(field_type) and field_name in self.validated_data:
                 instance = models.AnonymousUploadedFile.objects.get(file=self.validated_data[field_name])
                 instance.delete(keep_file=True)
-            if isinstance(field_type, UploadedFileField) and field_name in self.validated_data:
+            if self._is_auth_field(field_type) and field_name in self.validated_data:
                 instance = models.AuthenticatedUploadedFile.objects.get(file=self.validated_data[field_name])
                 instance.delete(keep_file=True)
 

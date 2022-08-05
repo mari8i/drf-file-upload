@@ -65,17 +65,17 @@ class UploadedFileSerializerMixin:
     def _is_auth_field(self, field_type):
         return isinstance(field_type, UploadedFileField) or isinstance(field_type, MetadataUploadedFileField)
 
-    def clean_uploaded_files(self):
+    def clean_uploaded_files(self, validated_data):
         for field_name, field_type in self.get_fields().items():
-            if self._is_anon_field(field_type) and field_name in self.validated_data:
-                instance = models.AnonymousUploadedFile.objects.get(file=self.validated_data[field_name])
+            if self._is_anon_field(field_type) and field_name in validated_data:
+                instance = models.AnonymousUploadedFile.objects.get(file=validated_data[field_name])
                 instance.delete(keep_file=True)
-            if self._is_auth_field(field_type) and field_name in self.validated_data:
-                instance = models.AuthenticatedUploadedFile.objects.get(file=self.validated_data[field_name])
+            if self._is_auth_field(field_type) and field_name in validated_data:
+                instance = models.AuthenticatedUploadedFile.objects.get(file=validated_data[field_name])
                 instance.delete(keep_file=True)
 
     def save(self, **kwargs):
-        self.clean_uploaded_files()
+        self.clean_uploaded_files(self.validated_data)
         return super().save(**kwargs)
 
     def validate(self, attrs):
